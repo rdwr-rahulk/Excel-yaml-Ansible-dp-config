@@ -1,0 +1,9 @@
+# Copy to targets/allowlist_lab.yml and commit it. Changes go through a reviewed PR.
+# xl2yaml preflight refuses to target any DefensePro that is not listed here
+# (name AND IP must match), and refuses to run if vars/cc.yml does not point to
+# this environment's controller.
+environment: lab
+controller: "192.168.1.1"        # must equal cc.cc_ip in vars/cc.yml for lab runs
+devices:
+  - name: "lab-dp-01"
+    ip: "10.105.192.32"

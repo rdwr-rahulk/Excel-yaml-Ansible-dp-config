@@ -1,0 +1,186 @@
+---
+# Known-good POC configuration used by the fidelity tests.
+# Derived from vars/create_vars.yml.example: same objects and values for the POC
+# sections, plus the explicit fields the re-review requires (TF status/match/flags,
+# BDoS outbound traffic, policy direction), the oos_profiles section the playbook
+# reads, and all toggles explicit with apply_policies_after_creation: false.
+dp_ip:
+  - "10.105.192.32"
+netclasses:
+  - name: "egor_test_net"
+    groups:
+      - { address: "10.10.10.0", mask: "255.255.255.0" }
+      - { address: "10.10.11.0", mask: "255.255.255.0" }
+      - { address: "10.10.12.0", mask: "255.255.255.0" }
+      - { address: "10.10.13.0", mask: "255.255.255.0" }
+  - name: "database_servers"
+    groups:
+      - { address: "10.20.1.0", mask: "24" }
+      - { address: "10.20.2.0", mask: "24" }
+cl_protections:
+  - name: "cl_prot_tcp_example"
+    protection_type: "concurrent_connections"
+    protocol: "tcp"
+    threshold: "100"
+    app_port_group: "https"
+    tracking_type: "src_ip"
+    action: "drop"
+    packet_report: "disable"
+    index: 0
+  - name: "cl_prot_udp_example"
+    protection_type: "cps"
+    protocol: "udp"
+    threshold: "500"
+    app_port_group: ""
+    tracking_type: "dst_ip_and_port"
+    action: "report_only"
+    packet_report: "enable"
+  - name: "cl_prot_custom_index"
+    protection_type: "cps"
+    protocol: "tcp"
+    threshold: "200"
+    app_port_group: "http"
+    tracking_type: "dst_ip"
+    action: "drop"
+    packet_report: "enable"
+    index: 450007
+cl_profiles:
+  - name: "cl_prof_example"
+    protections:
+      - "cl_prot_tcp_example"
+      - "cl_prot_udp_example"
+  - name: "cl_prof_existing_only"
+    protections:
+      - "some_existing_protection"
+oos_profiles:
+  - name: "OOS_Profile_1"
+    params:
+      action: "block_and_report"
+      act_threshold: 5000
+      term_threshold: 4000
+      syn_ack_allow: "enable"
+      packet_report: "enable"
+      risk: "high"
+      idle_state: "disable"
+      idle_state_bandwidth_threshold: 10000
+      idle_state_timer: 10
+bdos_profiles:
+  - name: "BDOS_Profile_50"
+    params:
+      action: "report_only"
+      inbound_traffic: 1000000
+      outbound_traffic: 500000
+      syn_flood: "enable"
+      udp_flood: "enable"
+      igmp_flood: "enable"
+      icmp_flood: "enable"
+      tcp_ack_fin_flood: "enable"
+      tcp_rst_flood: "enable"
+      tcp_syn_ack_flood: "enable"
+      tcp_frag_flood: "enable"
+      udp_frag_flood: "enable"
+      tcp_in_quota: 80
+      udp_in_quota: 50
+      icmp_in_quota: 10
+      igmp_in_quota: 50
+      tcp_out_quota: 80
+      udp_out_quota: 50
+      icmp_out_quota: 10
+      igmp_out_quota: 50
+      transparent_optimization: "enable"
+      packet_report: "enable"
+      burst_attack: "enable"
+      maximum_interval_between_bursts: 32
+      learning_suppression_threshold: 10
+      footprint_strictness: "medium"
+      udp_packet_rate_detection_sensitivity: "low"
+      bdos_rate_limit: "user_defined"
+      user_defined_rate_limit: 500
+      user_defined_rate_limit_unit: "mbps"
+      adv_udp_detection: "enable"
+create_dns_profiles: []
+create_ssl_objects: []
+create_https_profiles: []
+create_tf_profiles:
+  - profile_name: "TF_PROFILE_1"
+    action: "report_only"
+  - profile_name: "TF_PROFILE_2"
+    action: "block_and_report"
+create_tf_protections:
+  - profile_name: "TF_PROFILE_1"
+    protection_name: "TF_PROT_1"
+    status: "enable"
+    match_criteria: "match"
+    protocol: "tcp"
+    threshold_pps: "5000"
+    threshold_kbps: "0"
+    threshold_unit: "pps"
+    tcp_syn: "enable"
+    tcp_ack: "enable"
+    tcp_rst: "enable"
+    tcp_synack: "enable"
+    tcp_finack: "enable"
+    tcp_pshack: "enable"
+    packet_report: "enable"
+    attack_tracking_type: "per_destination"
+  - profile_name: "TF_PROFILE_2"
+    protection_name: "TF_PROT_2"
+    status: "enable"
+    match_criteria: "not-match"
+    protocol: "tcp"
+    threshold_pps: "5000"
+    threshold_kbps: "0"
+    threshold_unit: "pps"
+    tcp_syn: "enable"
+    tcp_ack: "disable"
+    tcp_rst: "enable"
+    tcp_synack: "disable"
+    tcp_finack: "enable"
+    tcp_pshack: "enable"
+    packet_report: "enable"
+    attack_tracking_type: "all"
+  - profile_name: "TF_PROFILE_2"
+    protection_name: "TF_PROT_UDP"
+    status: "disable"
+    match_criteria: "match"
+    protocol: "udp"
+    threshold_kbps: "2000"
+    threshold_unit: "kbps"
+    packet_report: "disable"
+    attack_tracking_type: "per_source"
+security_policy_config:
+  create_network_classes: true
+  create_cl_profiles: true
+  create_out_of_state_profiles: true
+  create_bdos_profiles: true
+  create_dns_profiles: false
+  create_https_profiles: false
+  create_traffic_filter_profiles: true
+  create_ssl_objects: false
+  create_security_policies: true
+  apply_policies_after_creation: false
+create_security_policies:
+  - policy_name: "example_security_policy_1"
+    state: "enable"
+    action: "report_only"
+    priority: "700"
+    src_network: "any"
+    dst_network: "egor_test_net"
+    direction: "oneway"
+    packet_reporting_status: "enable"
+    connection_limit_profile: "cl_prof_example"
+    bdos_profile: "BDOS_Profile_50"
+    dns_flood_profile: "dns_profile_10"
+    https_flood_profile: "https_profile_1"
+    traffic_filters_profile: "TF_PROFILE_1"
+    signature_protection_profile: "All-DoS-Shield"
+    out_of_state_profile: "OOS_Profile_1"
+  - policy_name: "example_security_policy_2"
+    state: "enable"
+    action: "block_and_report"
+    priority: "200"
+    src_network: "any"
+    dst_network: "web_servers"
+    direction: "twoway"
+    packet_reporting_status: "disable"
+    connection_limit_profile: "cl_prof_existing_only"

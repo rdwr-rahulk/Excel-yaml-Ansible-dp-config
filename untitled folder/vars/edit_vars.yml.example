@@ -1,0 +1,452 @@
+---
+# edit_vars.yml.example - Template for editing profiles variables
+# Copy this file to edit_vars.yml and customize with your environment details
+
+# Target DefensePro devices - add or remove IP addresses as needed
+dp_ip:
+  - "10.105.192.32"
+  # - "10.105.192.33"
+  # - "10.105.192.34"
+
+# Define the network class groups to edit
+# Each entry specifies which class_name, index, and new values to apply
+# To get the current network class structure and indices, use the get_network_class module first
+edit_networks:
+  # Example: Edit index 2 of "egor_test_net" to have address 100.1.117.0/27
+  - {class_name: "egor_test_net", index: 2, address: "100.1.117.0", mask: "27"}
+  
+  # Example: Edit index 1 of "egor_test_net" to have address 100.16.10.0/24  
+  - {class_name: "egor_test_net", index: 1, address: "100.16.10.0", mask: "24"}
+  
+  # Example: Edit index 0 with subnet mask in dotted decimal notation
+  # - {class_name: "egor_test_net", index: 0, address: "192.168.100.0", mask: "255.255.255.0"}
+  
+  # Example: Edit different network class
+  # - {class_name: "another_net_class", index: 0, address: "10.0.0.0", mask: "255.255.255.0"}
+  
+  # Add more entries as needed - the playbook will process all combinations of dp_ip × edit_networks
+
+# Notes for Network Classes:
+# - class_name: Must be an existing network class name
+# - index: The sub-index of the network group within the class (starting from 0)
+# - address: The new network address to assign
+# - mask: Can be CIDR notation (e.g., "24") or dotted decimal (e.g., "255.255.255.0")
+# - Use get_network_class module to discover existing classes and their current indices
+
+################################## Connection Limit Protections Variables ###############################
+# Define connection limit protections to edit
+# Each protection requires protection_index (mandatory) to identify which protection to edit
+# Protection_index can be found either by checking on DefensePro UI Protections-> Connection Limit protections menu or by running get_cl_protections.yml playbook
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+edit_cl_protections:
+  # Example: Edit protection index 450001, changing multiple parameters
+  - protection_index: 450001               # Protection index to edit (MANDATORY - starts from 450001)
+    protection_name: "HTTP Protection"      # Descriptive name for documentation (optional)
+    protocol: "tcp"                        # Protocol: tcp, udp (optional - only if changing)
+    threshold: "500"                       # Connection rate threshold as string (optional - only if changing)
+    app_port_group: "http"                 # Application port group - lowercase (optional - only if changing)
+    tracking_type: "src_ip"                # Tracking: src_ip, dst_ip, src_and_dest_ip, dst_ip_and_port (optional)
+    action: "drop"                         # Action: drop, report_only (optional - only if changing)
+    packet_report: "enable"                # Packet reporting: enable, disable (optional - only if changing)
+    protection_type: "cps"                 # Protection type: cps, concurrent_connections (optional - only if changing)
+
+  # Example: Edit protection index 450003, changing only specific parameters
+  # - protection_index: 450003             # Another protection to edit
+  #   protection_name: "SMTP Protection"    # Descriptive name
+  #   protocol: "tcp"                      # Protocol type
+  #   threshold: "200"                     # Connection limit threshold
+  #   app_port_group: "smtp"               # Application port group (or leave empty "" for all ports)
+  #   tracking_type: "dst_ip"              # Tracking type
+  #   action: "report_only"                # Action mode
+  #   packet_report: "disable"             # Packet reporting setting
+  #   protection_type: "concurrent_connections" # Protection detection type
+
+  # Example: Edit protection index 450005, changing minimal parameters
+  # - protection_index: 450005             # Yet another protection
+  #   threshold: "1000"                    # Only change the threshold
+  #   action: "drop"                       # Only change the action
+  #   # All other parameters remain unchanged
+
+  # Add more protection entries as needed
+
+# Notes for Connection Limit Protections:
+# - protection_index: MANDATORY - identifies which protection to edit (get from DefensePro UI or future get_cl_protections.yml)
+#   Connection limit protection indexes start from 450001 and increment upward
+# - protection_name: Optional descriptive label for documentation
+# - Only specify parameters you want to change - unspecified parameters keep their current values
+# 
+# ALL SUPPORTED Connection Limit Protections PARAMETERS with user-friendly values:
+# - protocol: "tcp", "udp" (Protocol type)
+# - threshold: "number" (Connection limit threshold as string, e.g., "500", "1000")
+# - app_port_group: "http", "https", "smtp", "dns", "ftp", "imap" or custom port, "" for all ports (must be lowercase)
+# - tracking_type: "src_ip", "dst_ip", "src_and_dest_ip", "dst_ip_and_port" (What to track for limiting)
+# - action: "drop", "report_only" (Action when threshold exceeded)
+# - packet_report: "enable", "disable" (Detailed packet reporting)
+# - protection_type: "cps", "concurrent_connections" (Detection type: Connections Per Second vs Total Active Connections)
+
+
+ ################################## BDoS Profile Edit Variables ###############################
+# Define BDoS profiles to edit
+# Each profile requires profile_name (mandatory) to identify which profile to edit
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+# Note - If you are editing bandwidth and quota same time then you have to run the playbook twice. 
+bdos_profiles:
+  - name: "BDOS_Profile_50"
+    params:
+      action: "report_only"                  # report_only/block_&_report
+      syn_flood: "enable"                    # enable/disable
+      udp_flood: "enable"                    # enable/disable
+      igmp_flood: "enable"                 # enable/disable
+      icmp_flood: "enable"                   # enable/disable
+      tcp_ack_fin_flood: "enable"          # enable/disable
+      tcp_rst_flood: "enable"              # enable/disable
+      tcp_syn_ack_flood: "enable"          # enable/disable
+      tcp_frag_flood: "enable"             # enable/disable
+      udp_frag_flood: "enable"             # enable/disable
+      inbound_traffic: 1000000               # 1 to 1342177280
+      outbound_traffic: 500000               # 1 to 1342177280
+      tcp_in_quota: 80                        # 0-100
+      udp_in_quota: 50
+      icmp_in_quota: 10
+      igmp_in_quota: 50
+      tcp_out_quota: 80
+      udp_out_quota: 50
+      icmp_out_quota: 10
+      igmp_out_quota: 50
+      transparent_optimization: "enable"        # enable/disable
+      packet_report: "enable"                   # enable/disable
+      burst_attack: "enable"                   # enable/disable
+      maximum_interval_between_bursts: 32       # minutes
+      learning_suppression_threshold: 10        # 0-50
+      footprint_strictness: "medium"            # low/medium/high
+      udp_packet_rate_detection_sensitivity: "medium"    # ignore/low/medium/high
+      bdos_rate_limit: "user_defined"           # disable/normal_edge/suspect_edge/user_defined
+      user_defined_rate_limit: 500              # 0-4000
+      user_defined_rate_limit_unit: "mbps"      # kbps/mbps/gbps
+      adv_udp_detection: "enable"               # enable/disable
+
+
+  # Example: Edit minimal parameters of another BDoS profile
+  # - profile_name: "BDOS_Profile_75"
+  #   action: "report_only"
+  #   inbound_traffic: 1500000
+  #   outbound_traffic: 750000
+
+# Notes for BDoS Profiles:
+# - profile_name: Mandatory - exact profile name to edit (get from DefensePro UI)
+# - Only specify parameters you want to change - unspecified parameters keep their current values
+#
+# ALL SUPPORTED BDoS PROFILE PARAMETERS:
+# - action: "report_only", "block_&_report"
+# - *_flood: "enable", "disable" (Enable or disable detection for specific flood types)
+# - inbound_traffic / outbound_traffic: Max traffic allowed (bps)
+# - *_in_quota / *_out_quota: Traffic quota per protocol (%)
+# - transparent_optimization: "enable", "disable"
+# - packet_report: "enable", "disable"
+# - burst_attack: "enable", "disable"
+# - maximum_interval_between_bursts: Interval in minutes
+# - learning_suppression_threshold: 0-50
+# - footprint_strictness: "low", "medium", "high"
+# - udp_packet_rate_detection_sensitivity: "Ignore_or_Disable", "low", "medium", "high"
+# - bdos_rate_limit: "disable", "normal_edge", "suspect_edge", "user_defined"
+# - user_defined_rate_limit: Numeric value 0-4000 (only if user_defined)
+# - user_defined_rate_limit_unit: "kbps", "mbps", "gbps"
+# - adv_udp_detection: "enable", "disable"
+
+
+################################## DNS Profile Edit Variables ###############################
+# Define DNS profiles to edit
+# Each profile requires name (mandatory) to identify which profile to edit
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+# Note - If you are editing QPS and quota same time then you have to run the playbook twice. 
+# DNS profiles to configure
+edit_dns_profiles:
+  - name: "dns_profile_10"
+    params:
+      # Core settings
+      action: "block_and_report"              # ENUM: report_only, block_and_report
+      expected_qps: 4000                      # Expected QPS (0–400M)
+      max_allow_qps: 7000                     # Maximum allowed QPS
+      manual_trigger: "disable"               # ENUM: enable, disable
+      footprint_strictness: "medium"          # ENUM: low, medium, high
+      packet_report: "enable"                 # ENUM: enable, disable
+      learning_suppression_threshold: 25      # Range: 0–50
+      sig_rate_lim_target: 10                 # Range: 0-100 in %
+
+      # DNS quotas
+      a_quota: 50                             # A-record quota %
+      mx_quota: 20                            # MX-record quota %
+      ptr_quota: 12                           # PTR-record quota %
+      aaaa_quota: 15                          # AAAA-record quota %
+      text_quota: 2                           # TXT-record quota %
+      soa_quota: 1                            # SOA-record quota %
+      naptr_quota: 1                          # NAPTR-record quota %
+      srv_quota: 1                            # SRV-record quota %
+      other_quota: 1                          # Other-record quota %
+
+      # Status toggles (use enable/disable instead of numeric)
+      a_status: "enable"
+      mx_status: "enable"
+      ptr_status: "enable"
+      aaaa_status: "enable"
+      text_status: "enable"
+      soa_status: "enable"
+      naptr_status: "enable"
+      srv_status: "enable"
+      other_status: "enable"
+
+      # Manual trigger thresholds
+      manual_trigger_act_thresh: 0
+      manual_trigger_term_thresh: 0
+
+### Notes for DNS Profiles:
+# name: Mandatory – exact profile name to edit (get from DefensePro UI)
+# Only specify parameters you want to change – unspecified parameters keep their current values
+# Supported DNS Profile Parameters:
+#   action: report_only / block_and_report
+#   expected_qps, max_allow_qps: numeric thresholds
+#   manual_trigger and related fields: enable/disable and thresholds
+#   packet_report: enable/disable
+#   footprint_strictness: low, medium, high
+#   learning_suppression_threshold: 0–50
+#   query_name_sensitivity: low, medium, high
+#   subdomains_wl_learning: enable/disable
+#   Quotas: a_quota, mx_quota, ptr_quota, aaaa_quota, text_quota, soa_quota, naptr_quota, srv_quota, other_quota (0–100)
+#   Status toggles: a_status, mx_status, ptr_status, aaaa_status, text_status, soa_status, naptr_status, srv_status, other_status (enable/disable)
+
+
+################################## OOS Profile Edit Variables ###############################
+# Define OOS profiles to edit
+# Each profile requires name (mandatory) to identify which profile to edit
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+
+oos_profiles:
+  # Example: Edit OOS profile "oos_profile_50", changing multiple parameters
+  - name: "OOS_Profile_1"                  # Mandatory: exact profile name
+    params:
+      action: block_and_report             # Options: report_only, block_and_report
+      act_threshold: 5000                  # Optional numeric threshold      
+      term_threshold: 4000                 # Optional numeric threshold
+      risk: "high"                         # Options: info,low, medium, high
+      idle_state: "enable"                 # Options: enable, disable
+      syn_ack_allow: enable                # Options: enable, disable
+      packet_report: enable                # Options: enable, disable
+      idle_state: disable                  # Options: enable, disable
+      idle_state_bandwidth_threshold: 10000 # Optional numeric threshold
+      idle_state_timer: 10                  # Optional numeric threshold
+
+  # Example: Minimal update for another OOS profile
+  #- name: "OOS_Profile_1"                  # Mandatory: exact profile name
+  #  params:
+  #    action: block_and_report             # Options: report_only, block_and_report
+  #    act_threshold: 5000                  # Optional numeric threshold      
+  #    term_threshold: 4000 
+
+# Notes for OOS Profiles:
+
+# name: Mandatory – exact profile name to edit (use get_oos_profile to verify)
+# Only specify parameters you want to change – unspecified parameters remain unchanged
+# Supported OOS Profile Parameters:
+        # action: report_only / block_and_report
+        # syn_ack_allow: enable / disable
+        # packet_report: enable / disable
+        # idle_state: enable / disable
+        # idle_state_bandwidth_threshold: numeric value
+        # idle_state_timer: numeric value
+        # act_threshold: numeric value
+        # term_threshold: numeric value
+
+################################## SSL Object Edit Variables ###############################
+
+# Define SSL objects to edit
+# Each SSL object requires ssl_object_name (mandatory) to identify which object to edit
+# Only specify parameters you want to change – unspecified parameters remain unchanged
+edit_ssl_objects:
+  - ssl_object_name: "server1"                   # Mandatory: exact SSL object name
+    ssl_object_profile: "enable"                 # Options: enable, disable
+    ip_address: "155.1.102.9"                    # Mandatory if changing IP
+    Port: 443                                    # Optional – default: 443
+    add_certificate: ""                          # Optional – certificate name to add 
+    remove_certificate: ""                       # Optional – certificate name to remove
+    front_sslv3: "disable"                       # Options: enable, disable
+    front_tls1.0: "disable"                      # Options: enable, disable
+    front_tls1.1: "disable"                      # Options: enable, disable
+    front_tls1.2: "enable"                       # Options: enable, disable
+    front_tls1.3: "enable"                       # Options: enable, disable
+    bk_end_decrypt: "enable"                      # Options: enable, disable
+    bk_end_sslv3: "disable"                      # Options: enable, disable
+    bk_end_tls1.0: "disable"                     # Options: enable, disable
+    bk_end_tls1.1: "enable"                      # Options: enable, disable
+    bk_end_tls1.2: "enable"                      # Options: enable, disable
+    bk_end_tls1.3: "enable"                      # Options: enable, disable
+    bk_end_port: 80                              # Optional – back-end port
+
+### Notes for SSL Objects:
+# The certificate API supports only one operation per call: you can either add a certificate or remove one, but not both simultaneously.
+# *** ssl_object_name ***: Mandatory – exact SSL object name to edit (use get_ssl_object to verify)
+# Only specify parameters you want to change – unspecified parameters remain unchanged
+# Supported SSL Object Parameters:
+# ssl_object_profile: enable / disable
+# IP_Address: IP of the server
+# Port: TCP port (default: 443)
+# add_certificate / remove_certificate: certificate management
+# front_sslv3, front_tls1.0, front_tls1.1, front_tls1.2, front_tls1.3: enable / disable
+# cipher_suite: enable / disable
+# front_user_cipher: custom front-end cipher string
+# bk_end_decrypt: enable / disable
+# bk_end_sslv3, bk_end_tls1.0, bk_end_tls1.1, bk_end_tls1.2, bk_end_tls1.3: enable / disable
+# bk_cipher: enable / disable
+# bk_user_cipher: custom back-end cipher string
+# bk_end_port: back-end TCP port
+
+################################## HTTPS Profile Edit Variables ###############################
+# Define HTTPS profiles to edit
+# Each profile requires name (mandatory) to identify which profile to edit
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+
+edit_https_profiles:
+  - name: "https_profile_1"
+    params:
+      action: "report_only"   # report_only,block_and_report
+      rate_limit: "2000"      # Packets per Second per Source
+      https_authentication_on_suspect_sources: "enable"  # enable, disable
+      https_authentication_on_all_sources: "enable"      # enable, disable
+      rate_limit_status: "enable"                       # enable, disable
+      packet_report: "disable"                          # enable, disable
+      full_session_decryption: "disable"                # enable, disable
+      #challenge_method: "javascript"                   # redirect_302, javascript
+
+  # Example: Minimal update for another HTTPS profile
+  # - name: "http_profile_25"
+  #   params:
+  #     action: report_only
+  #     rate_limit: 20000
+
+# Notes for HTTPS Profiles:
+# SSL Decryption and Encryption should be enabled on the DP for challenge method to work
+# name: Mandatory – exact profile name to edit (use get_https_profile to verify)
+# Only specify parameters you want to change – unspecified parameters remain unchanged
+#
+# Supported HTTPS Profile Parameters:
+#   action: report_only / block_and_report
+#   rate_limit: numeric value (Packets per Second per Source)
+#   selective_challenge: enable / disable
+#   collective_challenge: enable / disable
+#   challenge_method: redirect_302 / Javascript 
+#   rate_limit_status: enable / disable
+#   packet_report: enable / disable
+#   full_session_decryption: enable / disable
+
+########################## Traffic Filter Profiles & Protections ##########################
+# vars/edit_vars.yml
+# Corrected Traffic Filter edits
+
+# vars/edit_vars.yml
+
+# Traffic Filter profiles
+edit_tf_profiles:
+  - profile_name: "TF_PROFILE_1"
+    action: "report_only"      # options: report_only, block_and_report (Default: report_only)
+  - profile_name: "TF_PROFILE_2"
+    action: "report_only"      # options: report_only, block_and_report (Default: report_only)
+  - profile_name: "TF_PROFILE_3"
+    action: "report_only"           # report_only, block_and_report
+
+# Traffic Filter protections
+edit_tf_protections:
+  - profile_name: "TF_PROFILE_1"
+    protection_name: "TF_PROT_1"
+    status: "enable"                # enable, disable (Default: enable)
+    match_criteria: "match"         # match, not-match (Default: match)
+    protocol: "tcp"                 # any, tcp, udp, icmp, etc. (Default: any)
+    threshold_pps: "5000"           # Optional: rate limit in packets per second (Default: 10000)
+    threshold_kbps: "0"              # Optional: rate limit in kbps
+    threshold_unit: "pps"           # kbps, pps (Default: pps)
+    attack_tracking_type: "per_destination"    # all, per-source, per-destination, per_source_and_destination, track_returning_traffic (Default: all)
+    tcp_syn: "enable"               # TCP SYN flag handling (Default: enable)
+    tcp_ack: "enable"               # TCP ACK flag handling (Default: enable)
+    tcp_rst: "enable"               # TCP RST flag handling (Default: enable)
+    tcp_synack: "enable"            # TCP SYN-ACK flag handling (Default: enable)
+    tcp_finack: "enable"            # TCP FIN-ACK flag handling (Default: enable)
+    tcp_pshack: "enable"            # TCP PSH-ACK flag handling (Default: enable)
+    packet_report: "enable"         # enable, disable (Default: enable)
+    
+  - profile_name: "TF_PROFILE_2"
+    protection_name: "TF_PROT_2"
+    status: "enable"             
+    match_criteria: "match"         # match, not-match
+    protocol: "tcp"                 # any, tcp, udp, icmp, etc.
+    threshold_pps: "5000"
+    threshold_kbps: "0"
+    threshold_unit: "pps"           # kbps, pps
+    attack_tracking_type: "all"    # all, per-source, per-destination, per_source_and_destination, track_returning_traffic
+    tcp_syn: "enable"
+    tcp_ack: "enable"
+    tcp_rst: "enable"
+    tcp_synack: "enable"
+    tcp_finack: "enable"
+    tcp_pshack: "enable"
+    packet_report: "enable"         # enable, disable
+    
+### Minimal parameter to edit Traffic filter
+  - profile_name: "TF_PROFILE_3"
+    protection_name: "TF_PROT_3"
+    threshold_pps: "5000"
+
+ 
+################################## Security Policies Variables ###############################
+# Define security policies to edit
+# Each policy requires policy_name (mandatory) to identify which policy to edit
+# Only specify parameters you want to change - unspecified parameters remain unchanged
+edit_security_policies:
+  # Example: Edit a security policy, changing priority and action
+  - policy_name: "web_server_protection"    # Policy name to edit (MANDATORY)
+    priority: "750"                         # Change priority to 750
+    action: "block_and_report"                         # Change action to block and report mode
+    state: "enable"                         # Ensure policy is enabled
+    
+  # Example: Edit another policy with network and profile changes
+  # - policy_name: "database_protection"     # Another policy to edit
+  #   src_network: "internal_networks"       # Change source network class
+  #   dst_network: "database_servers"        # Change destination network class
+  #   direction: "twoway"                    # Change to bidirectional
+  #   connection_limit_profile: "db_limits"  # Bind connection limit profile
+  #   bdos_profile: "database_bdos"          # Bind BDOS profile
+
+  # Example: Edit policy to remove profile bindings
+  # - policy_name: "temp_policy"             # Policy to modify
+  #   connection_limit_profile: ""           # Remove connection limit profile binding
+  #   signature_protection_profile: ""       # Remove signature protection binding
+  #   state: "disable"                       # Disable the policy
+
+  # Add more policy entries as needed
+
+# Notes for Security Policies:
+# - policy_name: MANDATORY - Must be an existing security policy name
+# - Only specify parameters you want to change - unspecified parameters keep their current values
+# - Use empty string ("") for profile bindings to remove existing bindings
+# 
+# ALL SUPPORTED Security Policy PARAMETERS with user-friendly values:
+# Basic Configuration:
+# - src_network: "network_class_name" or "any" (Source network class)
+# - dst_network: "network_class_name" or "any" (Destination network class)  
+# - direction: "oneway", "twoway", "bidirectional", "one_way", "two_way" (Traffic direction)
+# - state: "enable", "disable", "enabled", "disabled", "active", "inactive" (Policy state)
+# - action: "block_and_report", "report_only" (Action when triggered)
+# - priority: "number" (Priority value 1-1000, higher numbers = higher priority)
+# - packet_reporting_status: "enable", "disable", "enabled", "disabled" (Packet reporting)
+#
+# Profile Bindings (use empty string "" to remove binding):
+# - connection_limit_profile: "profile_name" (Connection limit profile)
+# - bdos_profile: "profile_name" (BDOS/Network flood profile)
+# - syn_protection_profile: "profile_name" (SYN protection profile)
+# - dns_flood_profile: "profile_name" (DNS flood profile)
+# - https_flood_profile: "profile_name" (HTTPS flood profile)
+# - traffic_filters_profile: "profile_name" (Traffic filters profile)
+# - signature_protection_profile: "profile_name" (Application security/AppSec profile)
+# - ert_attackers_feed_profile: "profile_name" (ERT attackers feed profile)
+# - geo_feed_profile: "profile_name" (Geo feed profile)
+# - out_of_state_profile: "profile_name" (Out of state profile)
+
+
+  

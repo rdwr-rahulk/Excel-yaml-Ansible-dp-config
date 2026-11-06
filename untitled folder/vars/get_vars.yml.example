@@ -1,0 +1,106 @@
+---
+# get_vars.yml.example - Template for getting network class variables
+# Copy this file to get_vars.yml and customize with your environment details
+
+# Target DefensePro devices - add or remove IP addresses as needed
+dp_ip:
+  - "10.105.192.32"
+  # - "10.105.192.33"
+  # - "10.105.192.34"
+
+########################## Network Class Profile Filter variables ##########################
+
+# Filter by specific network class names, or leave empty list for all classes
+filter_class_names: []  # Set to list of class names to filter, or leave empty for all
+
+# Alternative examples:
+# filter_class_names: []                    # Get all network classes (default)
+# filter_class_names: ["web_servers"]       # Get only "web_servers" class  
+# filter_class_names: ["web_servers", "db_servers"]  # Get multiple specific classes
+
+# Notes:
+# - dp_ip: List of DefensePro devices to query
+# - filter_class_names: Optional filter to get specific network classes (leave empty for all)
+# - This operation is read-only and safe to run anytime
+# - Use this to discover existing network classes before creating, editing, or deleting
+
+
+########################## Connection Limit Profile Filter variables ##########################
+# Filter by specific profile names, or leave empty list for all profiles
+filter_cl_profile_names: ["cl_prof_egor_test10"]  # Set to list of profile names to filter, or leave empty for all
+# Examples:
+# filter_cl_profile_names: ["cl_prof_egor_test10"]  # Show only one profile
+# filter_cl_profile_names: ["cl_prof_egor_test10", "cl_prof_egor_test11"]  # Show multiple profiles
+# filter_cl_profile_names: []  # Show all profiles (default)
+
+###################### Get BDOS Profile ########################### Filter BDoS profiles by name, or leave empty list to include all profiles
+# Filter by specific BDoS profile names, or leave empty list for all profiles
+filter_bdos_profile_names: ["bdos_profile_1","bdos_profile_2"]  # Set to list of profile names to filter, or leave empty for all
+# Examples:
+# filter_bdos_profile_names: ["bdos_profile_1"]  # Show only one profile
+# filter_bdos_profile_names: ["bdos_profile_1", "bdos_profile_2"]  # Show multiple profiles
+# filter_bdos_profile_names: []  # Show all profiles (default)
+
+###################### Get OOS Profile ##########################
+# Define OOS profiles to Get on each device
+oos_profiles:
+ # - name: "oos_profile1"             # Must exactly match the profile name on the device
+ # - name: "oos_profile2"
+
+  # Notes:
+# - If all entries in oos_profiles are commented out or the list is empty, all OOS profiles on the device(s) will be included.
+# - To filter for specific profiles, list them as: - name: "oos_profile1"
+# - Each entry must include a 'name' key.
+
+###################### Get DNS Profile ##########################
+# Filter by specific DNS profile names, or leave empty list for all profiles
+filter_dns_profile_names: ["dns_profile_10"]
+# Examples:
+# filter_dns_profile_names: ["dns_profile_1"]  # Show only one profile
+# filter_dns_profile_names: ["dns_profile_2", "DNS_Profile_2"]  # Show multiple profiles
+# filter_dns_profile_names: []  # Fetch all profiles
+
+  # Notes:
+# - If all entries in dns_profiles are commented out or the list is empty, all dns profiles on the device(s) will be included.
+# - To filter for specific profiles, list them as: - name: "dns_profile_1"
+
+###################### Get SSL Object ##########################
+# vars/get_vars.yml
+# Optional: List of SSL objects to fetch (filtered)
+# If empty or omitted, all SSL objects will be retrieved
+filter_ssl_object_names: ["server1", "server2"]
+
+# filter_ssl_object_names: []  # Fetch all profiles
+# - name: server3   # uncomment/add more as needed
+###################### Get HTTPS Flood Profile ##########################
+# Filter by specific HTTP profile names, or leave empty list for all profiles
+filter_https_profile_names: ["https_profile_1","https_profile_2"]
+# Examples:
+# filter_https_profile_names: ["https_profile_1"]  # Show only one profile
+# filter_https_profile_names: ["https_profile_1", "https_profile_2"]  # Show multiple profiles
+# filter_https_profile_names: []  # Show all profiles (default)
+
+###################### Get Traffic Filter Profile ##########################
+# Filter by specific Traffic Filter profile names, or leave empty list for all profiles
+filter_tf_profile_names: ["TF_PROFILE_1", "TF_PROFILE_2"]
+
+# Examples:
+# filter_tf_profile_names: ["TF_PROFILE_1"]           # Show only one profile
+# filter_tf_profile_names: ["TF_PROFILE_1","TF_PROFILE_2"]  # Show multiple profiles
+# filter_tf_profile_names: []                          # Show all profiles (default)
+
+
+########################## Security Policy Filter variables ##########################
+# Filter by specific security policy names, or leave empty list for all policies
+filter_security_policy_names: []  # Set to list of policy names to filter, or leave empty for all
+
+# Examples:
+# filter_security_policy_names: []                    # Get all security policies (default)
+# filter_security_policy_names: ["web_server_policy"] # Get only "web_server_policy" policy  
+# filter_security_policy_names: ["web_server_policy", "db_server_policy"]  # Get multiple specific policies
+
+# Notes:
+# - filter_security_policy_names: Optional filter to get specific security policies (leave empty for all)
+# - This operation is read-only and safe to run anytime
+# - Use this to discover existing security policies before creating, editing, or deleting
+

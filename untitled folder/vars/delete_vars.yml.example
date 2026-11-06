@@ -1,0 +1,187 @@
+---
+# delete_vars.yml.example - Template for deleting network class variables
+# Copy this file to delete_vars.yml and customize with your environment details
+
+
+########################### Target DefensePro Devices ######################
+# Target DefensePro devices - add or remove IP addresses as needed
+dp_ip:
+  - "10.105.192.32"
+  # - "10.105.192.33"
+  # - "10.105.192.34"
+
+
+########################## Network Class Deletions ##########################
+# Define the network class groups to delete
+# To get the list of network classes to delete and their indices, use the get_network_class module first
+delete_networks:
+  # Example: Delete specific network groups from "egor_test_net"
+  - {class_name: "egor_test_net", index: 0}
+  - {class_name: "egor_test_net", index: 1}  
+  - {class_name: "egor_test_net", index: 2}
+  - {class_name: "egor_test_net", index: 3}
+  
+  # Example: Delete from different network classes
+  # - {class_name: "web_servers", index: 0}
+  # - {class_name: "database_servers", index: 0}
+
+# Network Class Deletion Notes:
+# - class_name: The name of the network class containing the group to delete
+# - index: The sub-index of the network group within the class (as integer)
+# - Use get_network_class module to discover existing classes and their current indices
+# - The playbook will delete all combinations of dp_ip × delete_networks
+# - Deletion is permanent - ensure you have backups if needed
+
+
+########################## Connection Limit Deletions ##########################
+# For connection limit profile and protection deletions, see sections below
+# Use delete_cl_profiles.yml playbook for these operations
+
+# Connection Limit Profile Deletions #############################
+# OPTIONAL: Remove protections from profiles (without deleting the protection itself)
+# Note: When the last protection is removed from a profile, the profile is automatically deleted
+
+cl_profile_deletions:
+  - profile_name: "cl_prof_egor_test10"
+    protections:
+      - "cl_prot_egor_test11"
+      - "cl_prot_egor_test12"
+  
+  # - profile_name: "another_profile"
+  #   protections:
+  #     - "protection_to_remove"
+
+# Connection Limit Protection Deletions ##########################
+# OPTIONAL: Delete protections entirely (protection must not be in any profile)
+# Important: Protection cannot be deleted if it's still associated with any profile
+
+# The format supporting both names (strings) and indexes (integers)
+cl_protection_deletions:
+  - protections_to_delete:
+      - "cl_prot_egor_test10"    # Delete by name (module will look up index)
+      - "cl_prot_egor_test11"    # Delete by name (module will look up index)
+      - 450156                   # Delete by index directly
+      - 450157                   # Delete by index directly
+
+# Connection Limit Deletion Notes 
+# 1. Both sections (cl_profile_deletions and cl_protection_deletions) are OPTIONAL
+# 2. You can define one, another or both
+# 3. Order matters: Remove protections from profiles BEFORE deleting the protections themselves
+# 4. Profile deletion is automatic when last protection is removed
+# 5. Protection deletion: Support both names (strings) and indexes (integers) in the same list
+#    - Names: Module automatically fetches current protections to map names to indexes  
+#    - Indexes: Used directly for deletion
+
+# Connection Limit Usage Patterns
+# Pattern 1: Remove protections from profiles only (keep protections for reuse)
+# - Define only cl_profile_deletions section
+# - Skip cl_protection_deletions section
+
+# Pattern 2: Delete protections entirely (must not be in any profile)
+# - Define only cl_protection_deletions section  
+# - Skip cl_profile_deletions section
+
+# Pattern 3: Complete cleanup (remove from profiles AND delete protections)
+# - Define both sections
+# - Module will process profile deletions first, then protection deletions
+
+# Pattern 4: Mixed operations
+# - Remove some protections from profiles
+# - Delete other standalone protections
+# - Define both sections with different protection names
+
+###################### BDOS Profile Deletions ##########################
+# Define BDOS profiles to delete on each device
+bdos_profiles:
+  - name: "bdos_profile_1"  # MANDATORY: Policy name to delete
+  - name: "bdos_profile_2"
+
+# BDoS Profile Deletion Notes:
+# - name: The name of the BDoS profile to delete (as configured on the device)
+# - The playbook will delete all combinations of dp_ip × bdos_profiles
+# - Deletion is permanent - ensure you have backups if needed
+# - If a BDoS profile is attached to protections or policies, ensure it is detached before deletion
+# - Use the get_bdos_profiles module (if available) to discover existing BDoS profiles
+# - Order of operations: Remove BDoS profile from all associations before deleting the profile itself
+# - You can mix BDoS profile deletions with other deletions in the same playbook run
+
+##################### DNS Profile Deletions #######################
+# OPTIONAL: Remove DNS profiles from devices
+# Note: Only specify profiles to delete by name
+
+delete_dns_profiles:
+  - name: "dns_profile_10"  # MANDATORY: Policy name to delete
+  - name: "dns_profile_2"
+
+
+## DNS Profile Deletion Notes:
+# - name: The exact name of the DNS profile to delete
+# - Only specify the profiles you want to remove; all others remain untouched
+# - Use get_dns_profile module to discover existing profiles
+# - The playbook will delete all combinations of dp_ip × dns_profile_deletions
+# - Deletion is permanent – ensure you have backups or exported configurations if needed
+
+  ###################### SSL Object Deletions ##########################
+# vars/delete_vars.yml
+# List of DefensePro devices where SSL objects will be deleted
+# SSL objects to delete (by name)
+delete_ssl_objects:
+  - name: server1
+  - name: server2
+
+###################### HTTPS Profile Deletions ##########################
+# Define BDOS profiles to delete on each device
+delete_https_profiles:
+  - name: "https_profile_1"             # Must exactly match the profile name on the device
+  - name: "https_profile_2"
+
+## HTTPS Profile Deletion Notes:
+# - name: The exact name of the HTTPS profile to delete
+# - Only specify the profiles you want to remove; all others remain untouched
+# - Use get_https_profile module to discover existing profiles
+# - The playbook will delete all combinations of dp_ip × https_profile_deletions
+# - Deletion is permanent – ensure you have backups or exported configurations if needed
+
+########################## Traffic Filter Deletions ##########################
+
+# delete_vars.yml
+# Structure must match what the module expects: "profiles" and "protections"
+
+delete_traffic_filters:
+  profiles:
+    - name: "TF_PROFILE_1"
+    - name: "TF_PROFILE_2"
+
+  protections:
+    - profile_name: "TF_PROFILE_1"
+      name: "TF_PROT_1"
+    - profile_name: "TF_PROFILE_2"
+      name: "TF_PROT_2"
+    
+  # you can delete multiple profiles and protections in one run.
+  # either you can delete just protections, or both.
+  
+########################## Security Policy Deletions ########################
+# Define security policies to delete
+# Two deletion modes supported:
+# 1. "policy_only" - Delete only the security policy (default, safer)
+# 2. "policy_and_profiles" - Delete policy and attempt cleanup of associated profiles
+
+delete_security_policies:
+  # Example: Simple policy deletion (recommended for most cases)
+  - policy_name: "test_security_policy"           # MANDATORY: Policy name to delete
+    deletion_mode: "policy_only"                  # OPTIONAL: Default deletion mode
+  
+  # Example: Complex deletion with profile cleanup
+  - policy_name: "old_security_policy"           # MANDATORY: Policy name to delete
+    deletion_mode: "policy_and_profiles"          # OPTIONAL: Also attempts profile cleanup(if not in use by other policies)
+  
+  # Example: Using default deletion mode (policy_only)
+  # - policy_name: "another_policy"               # deletion_mode defaults to "policy_only"
+
+# Security Policy Deletion Notes:
+# - policy_name: MANDATORY - Must be an existing security policy name
+# - deletion_mode: OPTIONAL - Controls deletion behavior:
+#   * "policy_only" (default): Simple DELETE on policy endpoint
+#   * "policy_and_profiles": Uses complex deletion endpoint that may clean up profiles
+

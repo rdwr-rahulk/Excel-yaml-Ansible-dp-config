@@ -1,0 +1,7 @@
+# Regular expressions for module warnings that may pass the xl2yaml result gate.
+# Empty by default: every warning fails the run (create_network_class.py reports
+# partial failures only as warnings). Add an entry only after review, with a reason.
+benign_warnings: []
+# Example:
+# benign_warnings:
+#   - "^API response does not provide clear success confirmation"   # verified manually on CHG12345

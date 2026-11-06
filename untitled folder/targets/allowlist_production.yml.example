@@ -1,0 +1,7 @@
+# Copy to targets/allowlist_production.yml and commit it. Owner approval required for changes.
+# An IP listed here can never be targeted by a lab run (and vice versa).
+environment: production
+controller: "10.0.0.10"          # production CyberController (cc.cc_ip in vars/cc.yml)
+devices:
+  - name: "syd1ddos04"
+    ip: "10.159.216.32"
